@@ -1,24 +1,47 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { useEffect } from "react";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { AuthProvider, useAuth } from "../context/AuthContext";
+import { PartidosProvider } from "../context/PartidosContext";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+// Guarda de rutas: equivalente al ProtectedRoute web
+function RouteGuard() {
+  const { isLogged, loading } = useAuth();
+  const segments = useSegments();
+  const router   = useRouter();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+  useEffect(() => {
+    if (loading) return;
+
+    const inAuth = segments[0] === "(auth)";
+
+    if (!isLogged && !inAuth) {
+      // Sin sesión fuera de auth → login
+      router.replace("/(auth)/login");
+    } else if (isLogged && inAuth) {
+      // Con sesión dentro de auth → home
+      router.replace("/(app)/home");
+    }
+  }, [isLogged, loading, segments]);
+
+  return null;
+}
+
+function AppWithProviders() {
+  const { user } = useAuth();
+  return (
+    <PartidosProvider userId={user?.id}>
+      <RouteGuard />
+      <Stack screenOptions={{ headerShown: false }} />
+    </PartidosProvider>
+  );
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthProvider>
+      <StatusBar style="light" backgroundColor="#0a0a12" />
+      <AppWithProviders />
+    </AuthProvider>
   );
 }
