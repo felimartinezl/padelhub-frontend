@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { createMatch } from "../services/matches.service";
 
 // ── Backend-aligned types ──────────────────────────────────────────────────────
 
@@ -99,7 +100,7 @@ export function getAvatarColor(index: number): string {
 
 interface PartidosContextType {
   partidos:       Partido[];
-  agregarPartido: (p: Omit<Partido, "id">) => void;
+  agregarPartido: (p: Omit<Partido, "id">) => Promise<void>;
 }
 
 const PartidosContext = createContext<PartidosContextType | null>(null);
@@ -165,8 +166,20 @@ export function PartidosProvider({
     userId === DEMO_USER_ID ? PARTIDOS_DEMO : []
   );
 
-  const agregarPartido = (p: Omit<Partido, "id">) => {
-    setPartidos((prev) => [{ ...p, id: `local-${Date.now()}` }, ...prev]);
+  const agregarPartido = async (p: Omit<Partido, "id">) => {
+    try {
+      const created = await createMatch({
+        organizer_id: p.organizer?.id ?? "",
+        club:         p.club,
+        format:       p.format,
+        match_date:   p.match_date,
+        match_time:   p.match_time,
+      });
+      setPartidos((prev) => [created, ...prev]);
+    } catch {
+      // Fallback to local state when API is unavailable or rejects
+      setPartidos((prev) => [{ ...p, id: `local-${Date.now()}` }, ...prev]);
+    }
   };
 
   return (

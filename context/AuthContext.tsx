@@ -1,26 +1,26 @@
 import {
   createContext,
   useContext,
-  useState,
   useEffect,
+  useState,
   type ReactNode,
 } from "react";
 import {
-  loginUser,
-  registerUser,
-  logoutUser,
-  updateProfile,
   getStoredUser,
   isAuthenticated,
-  type User,
+  loginUser,
+  logoutUser,
+  registerUser,
+  updateProfile,
   type RegisterData,
-} from "../services/auth.mock";
+  type User,
+} from "../services/auth.service";
 
 interface AuthContextType {
   user: User | null;
   isLogged: boolean;
   loading: boolean;
-  login: (phone: string, password: string) => Promise<void>;
+  login: (rut: number, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   editarPerfil: (data: Partial<User>) => Promise<void>;
@@ -43,8 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const login = async (phone: string, password: string) => {
-    const { user } = await loginUser(phone, password);
+  const login = async (rut: number, password: string) => {
+    const { user } = await loginUser(rut, password);
     setUser(user);
   };
 

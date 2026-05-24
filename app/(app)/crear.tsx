@@ -1,10 +1,11 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { getAvatarColor, getInitials, usePartidos } from "../../context/PartidosContext";
@@ -76,6 +77,7 @@ export default function CrearScreen() {
   const [showPickerIdx, setShowPickerIdx] = useState<number|null>(null);
   const [notif,         setNotif]         = useState<"whatsapp"|"push">("whatsapp");
   const [toast,         setToast]         = useState("");
+  const [submitting,    setSubmitting]    = useState(false);
 
   const initiales = user?.name ? getInitials(user.name) : "?";
 
@@ -107,7 +109,7 @@ export default function CrearScreen() {
 
   const showToastMsg = (msg: string) => { setToast(msg); setTimeout(() => setToast(""), 3000); };
 
-  const handleCrear = () => {
+  const handleCrear = async () => {
     if (!selectedClub) { showToastMsg("Selecciona un club"); return; }
     if (!selectedTime) { showToastMsg("Selecciona una hora"); return; }
 
@@ -141,20 +143,26 @@ export default function CrearScreen() {
       },
     }));
 
-    agregarPartido({
-      club: selectedClub.nombre,
-      format: formato,
-      status: "open",
-      match_date: selectedDate.toISOString(),
-      match_time: matchTime,
-      created_at: now,
-      organizer: { id: user?.id ?? "local-user", name: user?.name ?? "Tú" },
-      match_players: [myPlayer, ...otherPlayers],
-    });
-
-    const medio = notif === "whatsapp" ? "WhatsApp" : "Push";
-    showToastMsg(`¡Partido creado! Notificación enviada por ${medio}`);
-    setTimeout(() => router.replace("/(app)/home"), 1500);
+    setSubmitting(true);
+    try {
+      await agregarPartido({
+        club: selectedClub.nombre,
+        format: formato,
+        status: "open",
+        match_date: selectedDate.toISOString(),
+        match_time: matchTime,
+        created_at: now,
+        organizer: { id: user?.id ?? "local-user", name: user?.name ?? "Tú" },
+        match_players: [myPlayer, ...otherPlayers],
+      });
+      const medio = notif === "whatsapp" ? "WhatsApp" : "Push";
+      showToastMsg(`¡Partido creado! Notificación enviada por ${medio}`);
+      setTimeout(() => router.replace("/(app)/home"), 1500);
+    } catch {
+      showToastMsg("Error al crear el partido. Intenta de nuevo.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const { firstDay, daysInMonth } = getDaysInMonth(calYear, calMonth);
@@ -367,8 +375,10 @@ export default function CrearScreen() {
             </View>
           </View>
 
-          <TouchableOpacity style={S.btn} onPress={handleCrear}>
-            <Text style={S.btnText}>Crear y notificar</Text>
+          <TouchableOpacity style={[S.btn, submitting && S.btnDisabled]} onPress={handleCrear} disabled={submitting}>
+            {submitting
+              ? <ActivityIndicator color="#fff" size="small" />
+              : <Text style={S.btnText}>Crear y notificar</Text>}
           </TouchableOpacity>
 
         </View>

@@ -8,7 +8,7 @@ import {
   Text, TextInput, TouchableOpacity,
   View,
 } from "react-native";
-import { signUpUser } from "../../services/auth.mock";
+import { signUpUser } from "../../services/auth.service";
 import { C, S } from "../../theme";
 
 const ZONAS = [
@@ -48,7 +48,7 @@ export default function RegisterScreen() {
         zone:   form.zone,
         password: form.password,
       });
-      router.replace({ pathname: "/(auth)/login", params: { tel: form.phone.trim() } });
+      router.replace({ pathname: "/(auth)/login", params: { rut: form.rut } });
     } catch (e: any) {
       setError(e.message);
     } finally {
