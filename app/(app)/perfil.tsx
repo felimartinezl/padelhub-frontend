@@ -113,7 +113,7 @@ export default function PerfilScreen() {
           </TouchableOpacity>
 
           {/* MMR card */}
-          <View style={S.mmrBar}>
+          <TouchableOpacity style={S.mmrBar} onPress={() => router.push("/(app)/ranking" as any)}>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 11, color: C.text2, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 4 }}>MMR</Text>
               <Text style={S.mmrNum}>{user?.mmr ?? 1000}</Text>
@@ -121,13 +121,16 @@ export default function PerfilScreen() {
                 {esNuevo ? "Juega partidos para obtener ranking" : `#14 en ${user?.zone ?? "tu zona"}`}
               </Text>
             </View>
-            {!esNuevo && (
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={{ fontSize: 13, color: "#4ade80", fontWeight: "600" }}>▲ +127</Text>
-                <Text style={{ fontSize: 11, color: C.text2 }}>último mes</Text>
-              </View>
-            )}
-          </View>
+            <View style={{ alignItems: "flex-end", gap: 4 }}>
+              {!esNuevo && (
+                <>
+                  <Text style={{ fontSize: 13, color: "#4ade80", fontWeight: "600" }}>▲ +127</Text>
+                  <Text style={{ fontSize: 11, color: C.text2 }}>último mes</Text>
+                </>
+              )}
+              <Text style={{ fontSize: 12, color: C.accent, marginTop: esNuevo ? 0 : 4 }}>Ver ranking →</Text>
+            </View>
+          </TouchableOpacity>
 
           {/* Stats */}
           <View style={{ flexDirection: "row", gap: 10, marginBottom: 14 }}>
