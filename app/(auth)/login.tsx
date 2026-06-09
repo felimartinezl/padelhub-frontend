@@ -7,7 +7,19 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../../context/AuthContext";
+import { ApiError } from "../../services/api";
 import { C, S } from "../../theme";
+
+function loginErrorMsg(e: unknown): string {
+  if (e instanceof ApiError) {
+    if (e.status === 401 || e.status === 400) return "RUT o contraseña incorrectos.";
+    if (e.status === 404) return "No existe una cuenta con ese RUT.";
+    if (e.status >= 500)  return "Error del servidor. Intenta más tarde.";
+    return e.message;
+  }
+  if (e instanceof TypeError) return "Sin conexión. Verifica tu red.";
+  return "Ocurrió un error inesperado. Intenta de nuevo.";
+}
 
 export default function LoginScreen() {
   const { isLogged, loading, login } = useAuth();
@@ -35,8 +47,8 @@ export default function LoginScreen() {
     setSubmitting(true);
     try {
       await login(rutNum, pass);
-    } catch (e: any) {
-      setError(e?.message ?? "RUT o contraseña inválidos. Intenta nuevamente.");
+    } catch (e) {
+      setError(loginErrorMsg(e));
     } finally {
       setSubmitting(false);
     }
