@@ -31,11 +31,11 @@ export async function loginUser(
   rut: number,
   password: string
 ): Promise<{ user: User }> {
-  const data = await apiFetch<{ message: string; user: User; token?: string }>(
+  const data = await apiFetch<{ message: string; user: User; accessToken?: string; refreshToken?: string }>(
     "/auth/login",
     { method: "POST", body: JSON.stringify({ rut, password }) }
   );
-  if (data.token) await AsyncStorage.setItem("ph_token", data.token);
+  if (data.accessToken) await AsyncStorage.setItem("ph_token", data.accessToken);
   await AsyncStorage.setItem("ph_user", JSON.stringify(data.user));
   return { user: data.user };
 }
